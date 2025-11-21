@@ -14,11 +14,34 @@ class ApiService {
   );
 
   static String? _deviceId;
+  static String? _authToken;
 
   static void setDeviceId(String deviceId) {
     _deviceId = deviceId;
     _dio.options.headers['X-Device-ID'] = deviceId;
   }
+
+  /// Configurar token de autenticación
+  static void setAuthToken(String? token) {
+    _authToken = token;
+    if (token != null) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+      print('🔐 Token configurado en ApiService: ${token.substring(0, 10)}...');
+      print('📋 Headers actuales: ${_dio.options.headers}');
+    } else {
+      _dio.options.headers.remove('Authorization');
+      print('🔓 Token removido de ApiService');
+    }
+  }
+
+  /// Verificar si el usuario está autenticado
+  static bool get isAuthenticated => _authToken != null;
+
+  /// Obtener el token actual
+  static String? get authToken => _authToken;
+
+  /// Exponer instancia de Dio para otros servicios
+  static Dio get dio => _dio;
 
   // Registro de dispositivo móvil
   static Future<MobileUser> registerDevice({
@@ -93,13 +116,27 @@ class ApiService {
         queryParams['status'] = status;
       }
 
+      // Debug: Mostrar si está autenticado
+      print('📡 ========== OBTENIENDO ÓRDENES ==========');
+      print('🔍 Autenticado: $isAuthenticated');
+      print('🔍 Token presente: ${_authToken != null}');
+      if (_authToken != null) {
+        print('🎫 Token actual: ${_authToken!.substring(0, 20)}...');
+      }
+      print('🔍 Device ID: $_deviceId');
+      print('📋 Headers que se enviarán: ${_dio.options.headers}');
+
       final response = await _dio.get(
         ApiConfig.getOrders,
         queryParameters: queryParams,
       );
 
+      print('📦 Respuesta del servidor recibida');
+      print('✅ Status code: ${response.statusCode}');
+
       if (response.statusCode == 200 && response.data['success'] == true) {
         final List<dynamic> ordersJson = response.data['data']['orders'];
+        print('✅ ${ordersJson.length} órdenes obtenidas del servidor');
         return ordersJson.map((json) => Order.fromJson(json)).toList();
       } else {
         throw Exception(response.data['message'] ?? 'Error al obtener órdenes');

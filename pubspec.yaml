@@ -48,6 +48,14 @@ dependencies:
   url_launcher: ^6.2.2
   shared_preferences: ^2.2.2
 
+  # Autenticación
+  google_sign_in: ^6.2.1
+  flutter_secure_storage: ^9.0.0
+  firebase_auth: ^5.3.3
+
+  # Biometría (opcional)
+  local_auth: ^2.1.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -200,6 +200,14 @@ class NotificationService {
           print('   → Órdenes recargadas (recordatorio)');
           break;
 
+        case 'new_message':
+          // Actualizar la orden para reflejar nuevos mensajes
+          if (orderId != null) {
+            ordersProvider.refreshOrder(orderId);
+            print('   → Orden $orderId actualizada (nuevo mensaje)');
+          }
+          break;
+
         default:
           print('   ⚠️ Tipo de notificación desconocido: $type');
       }

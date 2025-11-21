@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/device_provider.dart';
 import '../providers/orders_provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -25,34 +26,64 @@ class _SplashScreenState extends State<SplashScreen> {
       final deviceProvider = context.read<DeviceProvider>();
       await deviceProvider.initialize();
 
+      // Inicializar autenticación
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.initialize();
+
       // Inicializar notificaciones
       await NotificationService.instance.initialize();
 
       // Configurar callback de notificaciones
-      NotificationService.instance.onNotificationTap = (orderId) {
-        Navigator.pushReplacementNamed(
-          context,
-          '/order-detail',
-          arguments: {'orderId': int.parse(orderId)},
-        );
+      NotificationService.instance.onNotificationNavigate = (data) {
+        final orderId = int.tryParse(data['order_id']?.toString() ?? '');
+        if (orderId != null) {
+          Navigator.pushReplacementNamed(
+            context,
+            '/order-detail',
+            arguments: {'orderId': orderId},
+          );
+        }
       };
 
-      // Cargar órdenes locales primero
-      final ordersProvider = context.read<OrdersProvider>();
-      await ordersProvider.loadLocalOrders();
-
-      // Intentar sincronizar con el servidor
-      try {
-        await ordersProvider.fetchOrders();
-      } catch (e) {
-        print('⚠️ No se pudo sincronizar con el servidor: $e');
-      }
-
-      // Navegar al home después de 2 segundos
+      // Esperar un poco para mostrar el splash
       await Future.delayed(const Duration(seconds: 2));
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+      if (!mounted) return;
+
+      // Verificar estado de autenticación
+      print('🔍 Estado de autenticación: ${authProvider.status}');
+      print('👤 Usuario: ${authProvider.user?.email}');
+      print('✅ ¿Autenticado? ${authProvider.isAuthenticated}');
+
+      if (authProvider.status == AuthStatus.authenticated) {
+        // Usuario autenticado, cargar órdenes
+        final ordersProvider = context.read<OrdersProvider>();
+        await ordersProvider.loadLocalOrders();
+
+        // Intentar sincronizar con el servidor
+        try {
+          await ordersProvider.fetchOrders();
+        } catch (e) {
+          print('⚠️ No se pudo sincronizar con el servidor: $e');
+        }
+
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else if (authProvider.status == AuthStatus.emailNotVerified) {
+        // Email no verificado, ir a pantalla de verificación
+        if (mounted) {
+          Navigator.pushReplacementNamed(
+            context,
+            '/verify-email',
+            arguments: {'userId': authProvider.user?.userId},
+          );
+        }
+      } else {
+        // No autenticado, ir a login
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
       }
     } catch (e) {
       print('❌ Error durante la inicialización: $e');

@@ -54,6 +54,20 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         break;
 
+      case 'new_message':
+        if (orderId != null) {
+          // Navegar a la pantalla de chat
+          final ordersProvider = context.read<OrdersProvider>();
+          final order = ordersProvider.getOrderById(orderId);
+          if (order != null) {
+            navigatorKey.currentState?.pushNamed(
+              '/chat',
+              arguments: {'order': order},
+            );
+          }
+        }
+        break;
+
       case 'order_reminder':
         // Ya estamos en la pantalla de home, solo refrescar
         _refreshOrders();

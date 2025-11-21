@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/order.dart';
 import '../config/theme.dart';
+import '../screens/chat_screen.dart';
 import 'volt_card.dart';
 import 'volt_badge.dart';
 
@@ -71,6 +72,60 @@ class OrderCard extends StatelessWidget {
                   ),
                 ),
               ],
+              const Spacer(),
+              // Botón de chat
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(order: order),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: order.hasUnreadMessages
+                        ? AppColors.primary
+                        : AppColors.gray200,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.chat_bubble,
+                        size: 16,
+                        color: order.hasUnreadMessages
+                            ? Colors.white
+                            : AppColors.textMuted,
+                      ),
+                      if (order.unreadMessagesCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.danger,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${order.unreadMessagesCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ],

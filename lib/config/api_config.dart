@@ -1,14 +1,24 @@
 class ApiConfig {
   // Base URL - Cambiar según el entorno
   // URL para servidor Laravel local (usa la IP de tu computadora en la red local)
-  static const String baseUrl = 'http://192.168.1.66:8000/api/v1';
+  static const String baseUrl = 'https://gerald-ironical-contradictorily.ngrok-free.dev/api/v1';
 
-  // Endpoints
+  // Endpoints - Device
   static const String registerDevice = '/mobile/register';
   static const String associateOrder = '/mobile/orders/associate';
   static const String getOrders = '/mobile/orders';
   static String getOrderDetail(int orderId) => '/mobile/orders/$orderId';
   static const String updateFcmToken = '/mobile/update-token';
+
+  // Endpoints - Auth (solo Google Sign-In)
+  static const String authLoginGoogle = '/auth/login/google';
+  static const String authLogout = '/auth/logout';
+  static const String authMe = '/auth/me';
+
+  // Endpoints - Device Management
+  static const String deviceChangeRequest = '/auth/device/change-request';
+  static const String deviceVerifyChange = '/auth/device/verify-change';
+  static const String deviceCancelRequest = '/auth/device/cancel-request';
 
   // Headers
   static const Map<String, String> headers = {

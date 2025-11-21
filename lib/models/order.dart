@@ -1,4 +1,5 @@
 import '../utils/json_helpers.dart';
+import 'business.dart';
 
 class OrderItem {
   final int id;
@@ -124,6 +125,9 @@ class Order {
   final DateTime updatedAt;
   final List<OrderItem> items;
   final List<OrderStatusHistory> statusHistory;
+  final int unreadMessagesCount;
+  final bool hasUnreadMessages;
+  final Business? business;
 
   Order({
     required this.orderId,
@@ -149,6 +153,9 @@ class Order {
     required this.updatedAt,
     required this.items,
     required this.statusHistory,
+    this.unreadMessagesCount = 0,
+    this.hasUnreadMessages = false,
+    this.business,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -182,6 +189,9 @@ class Order {
         json['status_history'],
         OrderStatusHistory.fromJson,
       ),
+      unreadMessagesCount: json['unread_messages_count'] ?? 0,
+      hasUnreadMessages: json['has_unread_messages'] ?? false,
+      business: json['business'] != null ? Business.fromJson(json['business']) : null,
     );
   }
 
