@@ -169,8 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const Expanded(child: Divider()),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: Text(
                         'O usa',
                         style: AppTextStyles.caption,

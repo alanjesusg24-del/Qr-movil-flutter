@@ -10,6 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Localización (OBLIGATORIO CETAM)
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
   # HTTP
   http: ^1.1.0
   dio: ^5.3.3
@@ -43,7 +48,6 @@ dependencies:
   cached_network_image: ^3.3.0
 
   # Utilidades
-  intl: ^0.18.1
   timeago: ^3.6.0
   url_launcher: ^6.2.2
   shared_preferences: ^2.2.2
@@ -56,13 +60,20 @@ dependencies:
   # Biometría (opcional)
   local_auth: ^2.1.8
 
+  # Mapas y Geolocalización
+  google_maps_flutter: ^2.5.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+  generate: true
 
   # assets:
   #   - assets/images/
@@ -74,3 +85,10 @@ flutter:
   #       - asset: fonts/NunitoSans-Regular.ttf
   #       - asset: fonts/NunitoSans-SemiBold.ttf
   #         weight: 600
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#2196F3"
+  adaptive_icon_foreground: "assets/icon/foreground_icon.png"

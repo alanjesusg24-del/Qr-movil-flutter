@@ -1,0 +1,83 @@
+{
+  "@@locale": "en",
+
+  "app_title": "Order QR System",
+  "@app_title": {
+    "description": "Application title"
+  },
+
+  "home_title": "Home",
+  "home_nearby_businesses": "Nearby Businesses",
+  "home_subscribed_businesses": "Subscribed Businesses",
+  "home_view_all": "View All",
+  "home_see_on_map": "See on Map",
+  "home_empty_subscribed": "No businesses subscribed yet",
+  "home_empty_nearby": "No businesses nearby",
+
+  "action_scan_qr": "Scan QR",
+  "action_save": "Save",
+  "action_cancel": "Cancel",
+  "action_edit": "Edit",
+  "action_delete": "Delete",
+  "action_search": "Search",
+  "action_refresh": "Refresh",
+  "action_continue": "Continue",
+  "action_accept": "Accept",
+  "action_close": "Close",
+  "action_back": "Back",
+  "action_logout": "Logout",
+
+  "auth_login": "Login",
+  "auth_email": "Email",
+  "auth_password": "Password",
+  "auth_forgot_password": "Forgot password?",
+  "auth_google_signin": "Sign in with Google",
+  "auth_verify_email": "Verify Email",
+  "auth_logout_confirm": "Are you sure you want to logout?",
+
+  "settings_title": "Settings",
+  "settings_account": "Account",
+  "settings_notifications": "Notifications",
+  "settings_language": "Language",
+  "settings_theme": "Theme",
+  "settings_about": "About",
+  "settings_version": "Version",
+
+  "business_details": "Business Details",
+  "business_address": "Address",
+  "business_phone": "Phone",
+  "business_email": "Email",
+  "business_website": "Website",
+  "business_hours": "Business Hours",
+
+  "order_status_pending": "Pending",
+  "order_status_ready": "Ready",
+  "order_status_delivered": "Delivered",
+  "order_status_cancelled": "Cancelled",
+
+  "error_network": "Network error. Please check your connection",
+  "error_unknown": "An unexpected error occurred",
+  "error_unauthorized": "Unauthorized access",
+  "error_not_found": "Resource not found",
+  "error_server": "Server error. Please try again later",
+
+  "success_saved": "Saved successfully",
+  "success_deleted": "Deleted successfully",
+  "success_updated": "Updated successfully",
+
+  "subscription_premium": "Premium",
+  "subscription_free": "Free",
+  "subscription_activate_premium": "Activate Premium",
+  "subscription_deactivate_premium": "Change to Free",
+
+  "map_title": "Map",
+  "all_businesses_title": "All Businesses",
+
+  "drawer_home": "Home",
+  "drawer_businesses": "All Businesses",
+  "drawer_map": "Map",
+  "drawer_settings": "Settings",
+
+  "loading": "Loading...",
+  "no_data": "No data available"
+}

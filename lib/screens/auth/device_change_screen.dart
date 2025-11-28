@@ -24,7 +24,6 @@ class _DeviceChangeScreenState extends State<DeviceChangeScreen> {
   int _resendCountdown = 60;
   Timer? _countdownTimer;
   int? _requestId;
-  String _verificationCode = '';
 
   @override
   void dispose() {
@@ -59,7 +58,6 @@ class _DeviceChangeScreenState extends State<DeviceChangeScreen> {
     setState(() => _isLoading = true);
 
     final deviceProvider = context.read<DeviceProvider>();
-    final authProvider = context.read<AuthProvider>();
 
     final deviceId = deviceProvider.deviceId;
     if (deviceId == null) {
@@ -96,10 +94,7 @@ class _DeviceChangeScreenState extends State<DeviceChangeScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _verificationCode = code;
-    });
+    setState(() => _isLoading = true);
 
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.verifyDeviceChange(
@@ -181,7 +176,7 @@ class _DeviceChangeScreenState extends State<DeviceChangeScreen> {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.1),
+                    color: AppColors.warning.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -277,8 +272,7 @@ class _DeviceChangeScreenState extends State<DeviceChangeScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Text(

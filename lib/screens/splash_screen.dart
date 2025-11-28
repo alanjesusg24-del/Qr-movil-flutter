@@ -5,6 +5,8 @@ import '../providers/device_provider.dart';
 import '../providers/orders_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/notification_service.dart';
+import '../core/icons/app_icon.dart';
+import '../core/icons/app_icons.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
         try {
           await ordersProvider.fetchOrders();
         } catch (e) {
-          print('⚠️ No se pudo sincronizar con el servidor: $e');
+          print('No se pudo sincronizar con el servidor: $e');
         }
 
         if (mounted) {
@@ -144,22 +146,24 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
               ),
-              child: const Icon(
-                Icons.qr_code_scanner,
+              child: AppIcon(
+                name: AppIconName.qrScan,
                 size: 64,
                 color: AppColors.primary,
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
-              'Order QR System',
-              style: AppTextStyles.h3.copyWith(
+              'Focus',
+              style: AppTextStyles.h2.copyWith(
                 color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Gestión de Órdenes',
+              'Gestión Inteligente de Órdenes',
               style: AppTextStyles.body1.copyWith(
                 color: Colors.white70,
               ),

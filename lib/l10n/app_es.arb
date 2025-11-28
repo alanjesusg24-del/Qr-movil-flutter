@@ -1,0 +1,80 @@
+{
+  "@@locale": "es",
+
+  "app_title": "Sistema Order QR",
+
+  "home_title": "Inicio",
+  "home_nearby_businesses": "Negocios Cercanos",
+  "home_subscribed_businesses": "Negocios Suscritos",
+  "home_view_all": "Ver Todos",
+  "home_see_on_map": "Ver en Mapa",
+  "home_empty_subscribed": "Aún no tienes negocios suscritos",
+  "home_empty_nearby": "No hay negocios cercanos",
+
+  "action_scan_qr": "Escanear QR",
+  "action_save": "Guardar",
+  "action_cancel": "Cancelar",
+  "action_edit": "Editar",
+  "action_delete": "Eliminar",
+  "action_search": "Buscar",
+  "action_refresh": "Actualizar",
+  "action_continue": "Continuar",
+  "action_accept": "Aceptar",
+  "action_close": "Cerrar",
+  "action_back": "Volver",
+  "action_logout": "Cerrar Sesión",
+
+  "auth_login": "Iniciar Sesión",
+  "auth_email": "Correo Electrónico",
+  "auth_password": "Contraseña",
+  "auth_forgot_password": "¿Olvidaste tu contraseña?",
+  "auth_google_signin": "Iniciar sesión con Google",
+  "auth_verify_email": "Verificar Correo",
+  "auth_logout_confirm": "¿Estás seguro de que deseas cerrar sesión?",
+
+  "settings_title": "Configuración",
+  "settings_account": "Cuenta",
+  "settings_notifications": "Notificaciones",
+  "settings_language": "Idioma",
+  "settings_theme": "Tema",
+  "settings_about": "Acerca de",
+  "settings_version": "Versión",
+
+  "business_details": "Detalles del Negocio",
+  "business_address": "Dirección",
+  "business_phone": "Teléfono",
+  "business_email": "Correo",
+  "business_website": "Sitio Web",
+  "business_hours": "Horario",
+
+  "order_status_pending": "Pendiente",
+  "order_status_ready": "Listo",
+  "order_status_delivered": "Entregado",
+  "order_status_cancelled": "Cancelado",
+
+  "error_network": "Error de conexión. Verifica tu internet",
+  "error_unknown": "Ocurrió un error inesperado",
+  "error_unauthorized": "Acceso no autorizado",
+  "error_not_found": "Recurso no encontrado",
+  "error_server": "Error del servidor. Intenta más tarde",
+
+  "success_saved": "Guardado exitosamente",
+  "success_deleted": "Eliminado exitosamente",
+  "success_updated": "Actualizado exitosamente",
+
+  "subscription_premium": "Premium",
+  "subscription_free": "Gratis",
+  "subscription_activate_premium": "Activar Premium",
+  "subscription_deactivate_premium": "Cambiar a Gratis",
+
+  "map_title": "Mapa",
+  "all_businesses_title": "Todos los Negocios",
+
+  "drawer_home": "Inicio",
+  "drawer_businesses": "Todos los Negocios",
+  "drawer_map": "Mapa",
+  "drawer_settings": "Configuración",
+
+  "loading": "Cargando...",
+  "no_data": "No hay datos disponibles"
+}

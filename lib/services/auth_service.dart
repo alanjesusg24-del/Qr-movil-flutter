@@ -1,10 +1,11 @@
+import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../config/api_config.dart';
 import '../models/auth_user.dart';
 import '../models/auth_response.dart';
-import '../models/device_change_request.dart';
 import 'secure_storage_service.dart';
 import 'api_service.dart';
 
@@ -24,62 +25,232 @@ class AuthService {
     serverClientId: '473319249019-qcf7ichcssu7p1m0ckbtu954eoop57ss.apps.googleusercontent.com',
   );
 
-  static final firebase_auth.FirebaseAuth _firebaseAuth =
-      firebase_auth.FirebaseAuth.instance;
+  static final firebase_auth.FirebaseAuth _firebaseAuth = firebase_auth.FirebaseAuth.instance;
 
   final SecureStorageService _storage = SecureStorageService();
 
-  static String? _currentToken;
-  static String? _deviceId;
-
-  /// Configurar device ID
-  static void setDeviceId(String deviceId) {
-    _deviceId = deviceId;
-  }
-
   /// Configurar token en headers
   static void setToken(String token) {
-    _currentToken = token;
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
   /// Remover token
   static void removeToken() {
-    _currentToken = null;
     _dio.options.headers.remove('Authorization');
   }
 
-  // MÉTODOS DE EMAIL/PASSWORD DESHABILITADOS - Solo usamos Google Sign-In
-  // Si necesitas reactivarlos en el futuro, descomenta estos métodos
-  // y restaura los endpoints en ApiConfig
-
-  /*
-  /// Registro con email y contraseña (DESHABILITADO)
+  /// Registro con email y contraseña
   Future<AuthResponse> register({
-    required String name,
     required String email,
     required String password,
-    required String deviceId,
+    required String name, // REQUERIDO
+    String? deviceId, // OPCIONAL
+    String? fcmToken, // OPCIONAL
   }) async {
-    return AuthResponse(
-      success: false,
-      message: 'Registro con email/password no disponible. Usa Google Sign-In.',
-    );
+    try {
+      // Obtener FCM token si no se proporcionó
+      final token = fcmToken ?? await FirebaseMessaging.instance.getToken();
+
+      final data = {
+        'name': name,
+        'email': email,
+        'password': password,
+        'password_confirmation': password, // Laravel requiere confirmación
+      };
+
+      // Solo agregar device_id si se proporciona
+      if (deviceId != null && deviceId.isNotEmpty) {
+        data['device_id'] = deviceId;
+      }
+
+      // Agregar FCM token y platform
+      if (token != null) {
+        data['fcm_token'] = token;
+        data['platform'] = Platform.isIOS ? 'ios' : 'android';
+        print('[FCM] Enviando token en registro: ${token.substring(0, 20)}...');
+      }
+
+      final response = await _dio.post(
+        ApiConfig.authRegister,
+        data: data,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final authResponse = AuthResponse.fromJson(response.data);
+
+        if (authResponse.success && authResponse.token != null) {
+          print('Guardando token en storage (Registro): ${authResponse.token!.substring(0, 10)}...');
+          await _storage.saveToken(authResponse.token!);
+          setToken(authResponse.token!);
+
+          // Si el backend no devuelve el usuario, obtenerlo del servidor
+          AuthUser? user = authResponse.user;
+          if (user == null) {
+            print('Usuario no incluido en respuesta Registro, obteniendo del servidor...');
+            user = await getCurrentUser();
+          }
+
+          if (user != null) {
+            print('Guardando usuario en storage (Registro): ${user.email}');
+            await _storage.saveUser(user);
+            print('Registro completado exitosamente');
+
+            // Actualizar la respuesta con el usuario obtenido
+            return AuthResponse(
+              success: true,
+              message: authResponse.message,
+              token: authResponse.token,
+              user: user,
+            );
+          }
+        }
+
+        return authResponse;
+      }
+
+      return AuthResponse(
+        success: false,
+        message: 'Error al crear la cuenta',
+      );
+    } on DioException catch (e) {
+      print('Error DioException en registro: ${e.response?.data}');
+
+      if (e.response?.statusCode == 422) {
+        final data = e.response?.data;
+        if (data != null && data['errors'] != null) {
+          // Errores de validación
+          final errors = data['errors'] as Map<String, dynamic>;
+          final firstError = errors.values.first;
+          return AuthResponse(
+            success: false,
+            message: firstError is List ? firstError[0] : firstError.toString(),
+          );
+        }
+      }
+
+      if (e.response?.statusCode == 409) {
+        return AuthResponse(
+          success: false,
+          message: 'El correo electrónico ya está registrado',
+        );
+      }
+
+      return AuthResponse(
+        success: false,
+        message: e.response?.data['message'] ?? 'Error de conexión',
+      );
+    } catch (e) {
+      print('Error general en registro: $e');
+      return AuthResponse(
+        success: false,
+        message: 'Error al crear la cuenta: ${e.toString()}',
+      );
+    }
   }
 
-  /// Login con email y contraseña (DESHABILITADO)
+  /// Login con email y contraseña
   Future<AuthResponse> login({
     required String email,
     required String password,
-    required String deviceId,
-    bool rememberMe = false,
+    String? deviceId, // OPCIONAL
+    String? fcmToken, // OPCIONAL
   }) async {
-    return AuthResponse(
-      success: false,
-      message: 'Login con email/password no disponible. Usa Google Sign-In.',
-    );
+    try {
+      // Obtener FCM token si no se proporcionó
+      final token = fcmToken ?? await FirebaseMessaging.instance.getToken();
+
+      final data = {
+        'email': email,
+        'password': password,
+      };
+
+      // Solo agregar device_id si se proporciona
+      if (deviceId != null && deviceId.isNotEmpty) {
+        data['device_id'] = deviceId;
+      }
+
+      // Agregar FCM token y platform
+      if (token != null) {
+        data['fcm_token'] = token;
+        data['platform'] = Platform.isIOS ? 'ios' : 'android';
+        print('[FCM] Enviando token en login: ${token.substring(0, 20)}...');
+      }
+
+      final response = await _dio.post(
+        ApiConfig.authLogin,
+        data: data,
+      );
+
+      if (response.statusCode == 200) {
+        final authResponse = AuthResponse.fromJson(response.data);
+
+        if (authResponse.success && authResponse.token != null) {
+          print('Guardando token en storage (Email): ${authResponse.token!.substring(0, 10)}...');
+          await _storage.saveToken(authResponse.token!);
+          setToken(authResponse.token!);
+
+          // Si el backend no devuelve el usuario, obtenerlo del servidor
+          AuthUser? user = authResponse.user;
+          if (user == null) {
+            print('Usuario no incluido en respuesta Email, obteniendo del servidor...');
+            user = await getCurrentUser();
+          }
+
+          if (user != null) {
+            print('Guardando usuario en storage (Email): ${user.email}');
+            await _storage.saveUser(user);
+            print('Sesión de Email guardada exitosamente');
+
+            // Actualizar la respuesta con el usuario obtenido
+            return AuthResponse(
+              success: true,
+              message: authResponse.message,
+              token: authResponse.token,
+              user: user,
+            );
+          }
+        }
+
+        return authResponse;
+      }
+
+      return AuthResponse(
+        success: false,
+        message: 'Error al iniciar sesión',
+      );
+    } on DioException catch (e) {
+      print('Error DioException en login: ${e.response?.data}');
+
+      if (e.response?.statusCode == 401) {
+        return AuthResponse(
+          success: false,
+          message: 'Credenciales incorrectas',
+        );
+      }
+
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data != null && data['requires_device_change'] == true) {
+          return AuthResponse(
+            success: false,
+            message: data['message'] ?? 'Dispositivo diferente detectado',
+            requiresDeviceChange: true,
+          );
+        }
+      }
+
+      return AuthResponse(
+        success: false,
+        message: e.response?.data['message'] ?? 'Error de conexión',
+      );
+    } catch (e) {
+      print('Error general en login: $e');
+      return AuthResponse(
+        success: false,
+        message: 'Error al iniciar sesión: ${e.toString()}',
+      );
+    }
   }
-  */
 
   /// Login con Google
   Future<AuthResponse> loginWithGoogle(String deviceId) async {
@@ -95,8 +266,7 @@ class AuthService {
       }
 
       // 2. Obtener autenticación de Google
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       // 3. Crear credenciales de Firebase (opcional, para verificación)
       final credential = firebase_auth.GoogleAuthProvider.credential(
@@ -105,8 +275,7 @@ class AuthService {
       );
 
       // 4. Sign in con Firebase
-      final firebase_auth.UserCredential userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
+      final firebase_auth.UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
 
       final firebase_auth.User? firebaseUser = userCredential.user;
 
@@ -131,21 +300,21 @@ class AuthService {
         final authResponse = AuthResponse.fromJson(response.data);
 
         if (authResponse.success && authResponse.token != null) {
-          print('💾 Guardando token en storage (Google): ${authResponse.token!.substring(0, 10)}...');
+          print('Guardando token en storage (Google): ${authResponse.token!.substring(0, 10)}...');
           await _storage.saveToken(authResponse.token!);
           setToken(authResponse.token!);
 
           // Si el backend no devuelve el usuario, obtenerlo del servidor
           AuthUser? user = authResponse.user;
           if (user == null) {
-            print('⚠️ Usuario no incluido en respuesta Google, obteniendo del servidor...');
+            print('Usuario no incluido en respuesta Google, obteniendo del servidor...');
             user = await getCurrentUser();
           }
 
           if (user != null) {
-            print('💾 Guardando usuario en storage (Google): ${user.email}');
+            print('Guardando usuario en storage (Google): ${user.email}');
             await _storage.saveUser(user);
-            print('✅ Sesión de Google guardada exitosamente');
+            print('Sesión de Google guardada exitosamente');
 
             // Actualizar la respuesta con el usuario obtenido
             return AuthResponse(
@@ -155,7 +324,7 @@ class AuthService {
               user: user,
             );
           } else {
-            print('❌ No se pudo obtener el usuario del servidor (Google)');
+            print('No se pudo obtener el usuario del servidor (Google)');
           }
         }
 
@@ -247,9 +416,7 @@ class AuthService {
       if (response.statusCode == 200) {
         final authResponse = AuthResponse.fromJson(response.data);
 
-        if (authResponse.success &&
-            authResponse.token != null &&
-            authResponse.user != null) {
+        if (authResponse.success && authResponse.token != null && authResponse.user != null) {
           await _storage.saveToken(authResponse.token!);
           await _storage.saveUser(authResponse.user!);
           setToken(authResponse.token!);

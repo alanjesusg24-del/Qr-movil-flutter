@@ -19,9 +19,7 @@ class OrderTimeline extends StatelessWidget {
           order.createdAt,
           AppColors.success,
           true,
-          isLast: order.readyAt == null &&
-              order.deliveredAt == null &&
-              order.cancelledAt == null,
+          isLast: order.readyAt == null && order.deliveredAt == null && order.cancelledAt == null,
         ),
         if (order.readyAt != null)
           _buildTimelineItem(

@@ -3,7 +3,6 @@ import '../models/order.dart';
 import '../config/theme.dart';
 import '../screens/chat_screen.dart';
 import 'volt_card.dart';
-import 'volt_badge.dart';
 
 class OrderCard extends StatelessWidget {
   final Order order;
@@ -31,10 +30,12 @@ class OrderCard extends StatelessWidget {
                 order.folioNumber,
                 style: AppTextStyles.h5,
               ),
-              VoltBadge(
-                text: _getStatusLabel(order.status),
-                backgroundColor: _getStatusColor(order.status),
-                icon: _getStatusIcon(order.status),
+              Text(
+                _getStatusLabel(order.status),
+                style: AppTextStyles.body1.copyWith(
+                  color: _getStatusColor(order.status),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -86,9 +87,7 @@ class OrderCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: order.hasUnreadMessages
-                        ? AppColors.primary
-                        : AppColors.gray200,
+                    color: order.hasUnreadMessages ? AppColors.primary : AppColors.gray200,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -97,9 +96,7 @@ class OrderCard extends StatelessWidget {
                       Icon(
                         Icons.chat_bubble,
                         size: 16,
-                        color: order.hasUnreadMessages
-                            ? Colors.white
-                            : AppColors.textMuted,
+                        color: order.hasUnreadMessages ? Colors.white : AppColors.textMuted,
                       ),
                       if (order.unreadMessagesCount > 0) ...[
                         const SizedBox(width: 4),
@@ -145,21 +142,6 @@ class OrderCard extends StatelessWidget {
         return AppColors.danger;
       default:
         return AppColors.secondary;
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'pending':
-        return Icons.schedule;
-      case 'ready':
-        return Icons.check_circle;
-      case 'delivered':
-        return Icons.done_all;
-      case 'cancelled':
-        return Icons.cancel;
-      default:
-        return Icons.info;
     }
   }
 

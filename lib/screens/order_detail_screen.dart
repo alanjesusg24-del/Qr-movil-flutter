@@ -187,9 +187,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
 
                   // Información del Cliente
-                  if (order.customerName != null ||
-                      order.customerPhone != null ||
-                      order.customerEmail != null)
+                  if (order.customerName != null || order.customerPhone != null || order.customerEmail != null)
                     VoltCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,42 +237,42 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                           const SizedBox(height: AppSpacing.md),
                           ...order.items.map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.itemName,
-                                        style: AppTextStyles.body1,
+                                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.itemName,
+                                            style: AppTextStyles.body1,
+                                          ),
+                                          if (item.description != null)
+                                            Text(
+                                              item.description!,
+                                              style: AppTextStyles.caption,
+                                            ),
+                                        ],
                                       ),
-                                      if (item.description != null)
-                                        Text(
-                                          item.description!,
-                                          style: AppTextStyles.caption,
-                                        ),
-                                    ],
-                                  ),
+                                    ),
+                                    Text(
+                                      'x${item.quantity}',
+                                      style: AppTextStyles.body2.copyWith(
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Text(
+                                      '\$${item.totalPrice.toStringAsFixed(2)}',
+                                      style: AppTextStyles.body1.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  'x${item.quantity}',
-                                  style: AppTextStyles.body2.copyWith(
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  '\$${item.totalPrice.toStringAsFixed(2)}',
-                                  style: AppTextStyles.body1.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )),
+                              )),
                           const Divider(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

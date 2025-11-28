@@ -4,8 +4,11 @@ import '../config/theme.dart';
 import '../providers/orders_provider.dart';
 import '../widgets/volt_card.dart';
 import '../widgets/order_card.dart';
+import '../widgets/app_drawer.dart';
 import '../services/notification_service.dart';
 import '../main.dart';
+import '../core/icons/app_icon.dart';
+import '../core/icons/app_icons.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final type = data['type'] as String?;
     final orderId = int.tryParse(data['order_id']?.toString() ?? '');
 
-    print('🔔 Navegando por notificación: type=$type, orderId=$orderId');
+    print('Navegando por notificación: type=$type, orderId=$orderId');
 
     switch (type) {
       case 'order_status_change':
@@ -90,15 +93,29 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Órdenes'),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: AppIcon(
+              name: AppIconName.notification,
+              size: 28,
+            ),
             onPressed: () {
-              Navigator.pushNamed(context, '/settings');
+              Navigator.pushNamed(context, '/notifications');
+            },
+          ),
+          IconButton(
+            icon: AppIcon(
+              name: AppIconName.userCircle,
+              size: 28,
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile');
             },
           ),
         ],
       ),
+      drawer: const AppDrawer(currentRoute: '/home'),
       body: RefreshIndicator(
         onRefresh: _refreshOrders,
         child: Consumer<OrdersProvider>(
@@ -170,8 +187,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.all(AppSpacing.xxl),
                       child: Column(
                         children: [
-                          Icon(
-                            Icons.inbox_outlined,
+                          AppIcon(
+                            name: AppIconName.order,
                             size: 64,
                             color: AppColors.gray400,
                           ),
@@ -217,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           Navigator.pushNamed(context, '/scan-qr');
         },
-        icon: const Icon(Icons.qr_code_scanner),
+        icon: AppIcon(name: AppIconName.qrScan),
         label: const Text('Escanear QR'),
         backgroundColor: AppColors.primary,
       ),
@@ -232,7 +249,10 @@ class _HomeScreenState extends State<HomeScreen> {
           style: AppTextStyles.h3.copyWith(color: color),
         ),
         const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.caption),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(color: color),
+        ),
       ],
     );
   }
@@ -249,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       },
       backgroundColor: Colors.white,
-      selectedColor: AppColors.primary.withOpacity(0.1),
+      selectedColor: AppColors.primary.withValues(alpha: 0.1),
       labelStyle: TextStyle(
         color: isSelected ? AppColors.primary : AppColors.textSecondary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,

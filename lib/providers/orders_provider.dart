@@ -12,20 +12,15 @@ class OrdersProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  List<Order> get activeOrders =>
-      _orders.where((o) => o.status == 'pending' || o.status == 'ready').toList();
+  List<Order> get activeOrders => _orders.where((o) => o.status == 'pending' || o.status == 'ready').toList();
 
-  List<Order> get pendingOrders =>
-      _orders.where((o) => o.status == 'pending').toList();
+  List<Order> get pendingOrders => _orders.where((o) => o.status == 'pending').toList();
 
-  List<Order> get readyOrders =>
-      _orders.where((o) => o.status == 'ready').toList();
+  List<Order> get readyOrders => _orders.where((o) => o.status == 'ready').toList();
 
-  List<Order> get deliveredOrders =>
-      _orders.where((o) => o.status == 'delivered').toList();
+  List<Order> get deliveredOrders => _orders.where((o) => o.status == 'delivered').toList();
 
-  List<Order> get cancelledOrders =>
-      _orders.where((o) => o.status == 'cancelled').toList();
+  List<Order> get cancelledOrders => _orders.where((o) => o.status == 'cancelled').toList();
 
   int get activeOrdersCount => activeOrders.length;
   int get readyOrdersCount => readyOrders.length;
@@ -36,9 +31,9 @@ class OrdersProvider extends ChangeNotifier {
     try {
       _orders = await DatabaseService.instance.getAllOrders();
       notifyListeners();
-      print('📦 ${_orders.length} órdenes cargadas desde DB local');
+      print('[DATA] ${_orders.length} órdenes cargadas desde DB local');
     } catch (e) {
-      print('❌ Error al cargar órdenes locales: $e');
+      print('[ERROR] Error al cargar órdenes locales: $e');
     }
   }
 
@@ -57,12 +52,12 @@ class OrdersProvider extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-      print('✅ ${_orders.length} órdenes obtenidas del servidor');
+      print('[OK] ${_orders.length} órdenes obtenidas del servidor');
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
-      print('❌ Error al obtener órdenes: $e');
+      print('[ERROR] Error al obtener órdenes: $e');
 
       // Cargar desde base de datos local si falla
       await loadLocalOrders();
@@ -81,10 +76,10 @@ class OrdersProvider extends ChangeNotifier {
       await DatabaseService.instance.insertOrder(order);
 
       notifyListeners();
-      print('✅ Orden ${order.folioNumber} asociada exitosamente');
+      print('[OK] Orden ${order.folioNumber} asociada exitosamente');
       return order;
     } catch (e) {
-      print('❌ Error al asociar orden: $e');
+      print('[ERROR] Error al asociar orden: $e');
       rethrow;
     }
   }
@@ -106,7 +101,7 @@ class OrdersProvider extends ChangeNotifier {
 
       return order;
     } catch (e) {
-      print('❌ Error al obtener detalle de orden: $e');
+      print('[ERROR] Error al obtener detalle de orden: $e');
       rethrow;
     }
   }
@@ -115,9 +110,9 @@ class OrdersProvider extends ChangeNotifier {
   Future<void> refreshOrder(int orderId) async {
     try {
       await getOrderDetail(orderId);
-      print('🔄 Orden $orderId actualizada');
+      print('Orden $orderId actualizada');
     } catch (e) {
-      print('❌ Error al actualizar orden $orderId: $e');
+      print('[ERROR] Error al actualizar orden $orderId: $e');
     }
   }
 
@@ -146,6 +141,6 @@ class OrdersProvider extends ChangeNotifier {
     await DatabaseService.instance.deleteAllOrders();
     _orders = [];
     notifyListeners();
-    print('🗑️ Todas las órdenes eliminadas');
+    print('Todas las órdenes eliminadas');
   }
 }

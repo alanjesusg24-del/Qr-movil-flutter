@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
-import '../providers/device_provider.dart';
 import '../providers/orders_provider.dart';
 import '../widgets/volt_card.dart';
-import '../widgets/volt_button.dart';
+import '../widgets/app_drawer.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -15,6 +14,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Configuración'),
       ),
+      drawer: const AppDrawer(currentRoute: '/settings'),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
@@ -26,49 +26,6 @@ class SettingsScreen extends StatelessWidget {
                 Text('Información de la App', style: AppTextStyles.h6),
                 const SizedBox(height: AppSpacing.md),
                 _buildInfoItem('Versión', '1.0.0'),
-                const Divider(),
-                Consumer<DeviceProvider>(
-                  builder: (context, deviceProvider, child) {
-                    return _buildInfoItem(
-                      'Device ID',
-                      deviceProvider.deviceId ?? 'No disponible',
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // Estadísticas
-          VoltCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Estadísticas', style: AppTextStyles.h6),
-                const SizedBox(height: AppSpacing.md),
-                Consumer<OrdersProvider>(
-                  builder: (context, ordersProvider, child) {
-                    return Column(
-                      children: [
-                        _buildInfoItem(
-                          'Órdenes Totales',
-                          '${ordersProvider.totalOrdersCount}',
-                        ),
-                        const Divider(),
-                        _buildInfoItem(
-                          'Órdenes Activas',
-                          '${ordersProvider.activeOrdersCount}',
-                        ),
-                        const Divider(),
-                        _buildInfoItem(
-                          'Órdenes Entregadas',
-                          '${ordersProvider.deliveredOrders.length}',
-                        ),
-                      ],
-                    );
-                  },
-                ),
               ],
             ),
           ),
@@ -133,14 +90,14 @@ class SettingsScreen extends StatelessWidget {
                 Text('Acerca de', style: AppTextStyles.h6),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Order QR System es una plataforma para gestión de órdenes con códigos QR.',
+                  'Focus es una plataforma para gestión de órdenes con códigos QR.',
                   style: AppTextStyles.body2.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  '© 2025 Order QR System',
+                  '© 2025 Focus',
                   style: AppTextStyles.caption,
                 ),
               ],

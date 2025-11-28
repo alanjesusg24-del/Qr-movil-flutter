@@ -12,8 +12,7 @@ class NotificationService {
   NotificationService._privateConstructor();
 
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   // Callback para navegación
   Function(Map<String, dynamic> data)? onNotificationNavigate;
@@ -29,43 +28,42 @@ class NotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ Permisos de notificación concedidos');
+      print('Permisos de notificación concedidos');
 
       // Configurar notificaciones locales
       await _initializeLocalNotifications();
 
-      // Obtener y enviar token al backend
+      // Obtener y mostrar token FCM (no enviar aquí, se envía en login/registro)
       String? token = await _fcm.getToken();
       if (token != null) {
-        print('📱 FCM Token: $token');
-        try {
-          await ApiService.updateFcmToken(token);
-        } catch (e) {
-          print('❌ Error al actualizar FCM token: $e');
-        }
+        print('FCM Token: $token');
       }
 
-      // Escuchar cambios de token
+      // Escuchar cambios de token (renovación automática)
       _fcm.onTokenRefresh.listen((newToken) async {
-        print('🔄 Token actualizado: $newToken');
-        try {
-          await ApiService.updateFcmToken(newToken);
-        } catch (e) {
-          print('❌ Error al actualizar token: $e');
+        print('[FCM] Token renovado: ${newToken.substring(0, 20)}...');
+        // Solo actualizar si el usuario está autenticado
+        if (ApiService.isAuthenticated) {
+          try {
+            await ApiService.updateFcmToken(newToken);
+            print('[FCM] Token renovado enviado al backend');
+          } catch (e) {
+            print('[FCM] Error al actualizar token renovado: $e');
+          }
+        } else {
+          print('[FCM] Usuario no autenticado, token no enviado al backend');
         }
       });
     } else {
-      print('⚠️ Permisos de notificación denegados');
+      print('Permisos de notificación denegados');
     }
   }
 
   /// Inicializar notificaciones locales
   Future<void> _initializeLocalNotifications() async {
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
+    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
@@ -92,21 +90,20 @@ class NotificationService {
     );
 
     await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
   }
 
   /// Manejo cuando se toca una notificación local
   void _onNotificationTapped(NotificationResponse response) {
-    print('📱 Notificación tocada: ${response.payload}');
+    print('Notificación tocada: ${response.payload}');
 
     if (response.payload != null) {
       try {
         final data = json.decode(response.payload!);
         _handleNotificationNavigation(data);
       } catch (e) {
-        print('❌ Error al parsear payload: $e');
+        print('Error al parsear payload: $e');
       }
     }
   }
@@ -115,7 +112,7 @@ class NotificationService {
   Future<void> setupNotificationListeners(BuildContext context) async {
     // Notificaciones cuando la app está en foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      print('📩 Notificación recibida en foreground');
+      print('Notificación recibida en foreground');
       print('   Título: ${message.notification?.title}');
       print('   Cuerpo: ${message.notification?.body}');
       print('   Data: ${message.data}');
@@ -137,7 +134,7 @@ class NotificationService {
 
     // Cuando la app se abre desde una notificación (app en background)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('📱 App abierta desde notificación (background)');
+      print('App abierta desde notificación (background)');
       print('   Data: ${message.data}');
 
       _handleNotificationNavigation(message.data);
@@ -149,7 +146,7 @@ class NotificationService {
     // Verificar si la app se abrió desde una notificación (app terminated)
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      print('📱 App abierta desde notificación (terminated)');
+      print('App abierta desde notificación (terminated)');
       print('   Data: ${initialMessage.data}');
 
       // Esperar a que la app esté completamente inicializada
@@ -176,7 +173,7 @@ class NotificationService {
       final type = data['type'] as String?;
       final orderId = int.tryParse(data['order_id']?.toString() ?? '');
 
-      print('🔄 Actualizando órdenes por notificación tipo: $type');
+      print('Actualizando órdenes por notificación tipo: $type');
 
       switch (type) {
         case 'order_status_change':
@@ -209,10 +206,10 @@ class NotificationService {
           break;
 
         default:
-          print('   ⚠️ Tipo de notificación desconocido: $type');
+          print('   Tipo de notificación desconocido: $type');
       }
     } catch (e) {
-      print('❌ Error al actualizar órdenes: $e');
+      print('Error al actualizar órdenes: $e');
     }
   }
 
@@ -245,8 +242,8 @@ class NotificationService {
     );
 
     // Usar order_id como ID de notificación o generar uno único
-    final notificationId = int.tryParse(data['order_id']?.toString() ?? '') ??
-        DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final notificationId =
+        int.tryParse(data['order_id']?.toString() ?? '') ?? DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     await _localNotifications.show(
       notificationId,
@@ -271,6 +268,6 @@ class NotificationService {
 // Handler para mensajes en background
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('📨 Mensaje recibido en background: ${message.notification?.title}');
+  print('Mensaje recibido en background: ${message.notification?.title}');
   print('   Data: ${message.data}');
 }

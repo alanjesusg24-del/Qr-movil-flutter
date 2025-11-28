@@ -97,26 +97,26 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _messageController.text.trim();
 
     if (text.isEmpty) {
-      print('⚠️ Mensaje vacío, no se envía');
+      print('Mensaje vacío, no se envía');
       return;
     }
 
     if (_isSending) {
-      print('⚠️ Ya hay un mensaje enviándose');
+      print('Ya hay un mensaje enviándose');
       return;
     }
 
     setState(() => _isSending = true);
 
     try {
-      print('📤 Enviando mensaje: $text');
+      print('Enviando mensaje: $text');
 
       final sentMessage = await _chatService.sendMessage(
         widget.order.orderId,
         text,
       );
 
-      print('✅ Mensaje enviado exitosamente');
+      print('Mensaje enviado exitosamente');
 
       // Agregar mensaje a la lista inmediatamente
       setState(() {
@@ -204,7 +204,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -284,9 +284,7 @@ class _ChatScreenState extends State<ChatScreen> {
               _formatTime(message.createdAt),
               style: TextStyle(
                 fontSize: 10,
-                color: isFromCustomer
-                    ? Colors.white.withOpacity(0.7)
-                    : AppColors.textMuted,
+                color: isFromCustomer ? Colors.white.withValues(alpha: 0.7) : AppColors.textMuted,
               ),
             ),
           ],

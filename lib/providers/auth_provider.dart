@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/secure_storage_service.dart';
 import '../services/biometric_service.dart';
 import '../services/api_service.dart';
+import '../services/database_service.dart';
 
 enum AuthStatus {
   uninitialized,
@@ -34,132 +35,186 @@ class AuthProvider extends ChangeNotifier {
 
   /// Inicializar provider
   Future<void> initialize() async {
-    print('🔄 Inicializando AuthProvider...');
+    print('Inicializando AuthProvider...');
     _isLoading = true;
     notifyListeners();
 
     try {
       // Verificar si hay token guardado
       final hasToken = await _storage.hasToken();
-      print('🔍 ¿Tiene token guardado? $hasToken');
+      print('[SEARCH] ¿Tiene token guardado? $hasToken');
 
       if (hasToken) {
         // Obtener token y configurar en ApiService
         final token = await _storage.getToken();
-        print('🎫 Token recuperado: ${token?.substring(0, 10)}...');
+        print('[TOKEN] Token recuperado: ${token?.substring(0, 10)}...');
 
         if (token != null) {
           ApiService.setAuthToken(token);
-          print('✅ Token configurado en ApiService');
+          print('[OK] Token configurado en ApiService');
         }
 
         // Intentar obtener usuario guardado localmente primero
         final savedUser = await _storage.getUser();
-        print('👤 Usuario guardado localmente: ${savedUser?.email}');
+        print('Usuario guardado localmente: ${savedUser?.email}');
 
         if (savedUser != null) {
           // Usar usuario guardado localmente
           _user = savedUser;
-
-          // Verificar estado del usuario
-          if (!savedUser.emailVerified) {
-            _status = AuthStatus.emailNotVerified;
-            print('⚠️ Email no verificado');
-          } else {
-            _status = AuthStatus.authenticated;
-            print('✅ Usuario autenticado (desde storage local)');
-          }
+          _status = AuthStatus.authenticated;
+          print('[OK] Usuario autenticado (desde storage local)');
 
           // Intentar actualizar desde el servidor en segundo plano (sin bloquear)
           _authService.getCurrentUser().then((updatedUser) {
             if (updatedUser != null) {
-              print('✅ Usuario actualizado desde servidor');
+              print('[OK] Usuario actualizado desde servidor');
               _user = updatedUser;
               notifyListeners();
             }
           }).catchError((e) {
-            print('⚠️ No se pudo actualizar usuario desde servidor (continuando con datos locales): $e');
+            print('[WARN] No se pudo actualizar usuario desde servidor (continuando con datos locales): $e');
           });
         } else {
           // No hay usuario local, intentar obtener del servidor
-          print('⚠️ No hay usuario guardado localmente, intentando obtener del servidor...');
+          print('[WARN] No hay usuario guardado localmente, intentando obtener del servidor...');
           final user = await _authService.getCurrentUser();
 
           if (user != null) {
             _user = user;
-
-            // Verificar estado del usuario
-            if (!user.emailVerified) {
-              _status = AuthStatus.emailNotVerified;
-            } else {
-              _status = AuthStatus.authenticated;
-            }
-            print('✅ Usuario obtenido del servidor');
+            _status = AuthStatus.authenticated;
+            print('[OK] Usuario obtenido del servidor');
           } else {
-            print('❌ No se pudo obtener usuario del servidor, cerrando sesión');
+            print('[ERROR] No se pudo obtener usuario del servidor, cerrando sesión');
             _status = AuthStatus.unauthenticated;
             await _storage.clearAuthData();
             ApiService.setAuthToken(null);
           }
         }
       } else {
-        print('ℹ️ No hay token guardado, usuario no autenticado');
+        print('[INFO] No hay token guardado, usuario no autenticado');
         _status = AuthStatus.unauthenticated;
         ApiService.setAuthToken(null);
       }
 
       // Verificar disponibilidad de biometría
       _biometricAvailable = await _biometricService.isAvailable();
-      print('🔐 Biometría disponible: $_biometricAvailable');
+      print('[AUTH] Biometría disponible: $_biometricAvailable');
     } catch (e) {
-      print('❌ Error al inicializar auth provider: $e');
+      print('[ERROR] Error al inicializar auth provider: $e');
 
       // Si hay error pero tenemos datos locales, mantener la sesión
       final savedUser = await _storage.getUser();
       if (savedUser != null) {
-        print('⚠️ Error en inicialización pero hay usuario guardado, manteniendo sesión');
+        print('[WARN] Error en inicialización pero hay usuario guardado, manteniendo sesión');
         _user = savedUser;
-        _status = savedUser.emailVerified
-            ? AuthStatus.authenticated
-            : AuthStatus.emailNotVerified;
+        _status = AuthStatus.authenticated;
       } else {
         _status = AuthStatus.unauthenticated;
       }
     } finally {
       _isLoading = false;
-      print('✅ AuthProvider inicializado: $_status');
+      print('[OK] AuthProvider inicializado: $_status');
       notifyListeners();
     }
   }
 
-  // MÉTODOS DE EMAIL/PASSWORD DESHABILITADOS
-  // Solo usamos Google Sign-In ahora
-
-  /*
-  /// Registro (DESHABILITADO)
+  /// Registro con email y contraseña
   Future<bool> register({
-    required String name,
     required String email,
     required String password,
-    required String deviceId,
+    required String name,
+    String? deviceId, // OPCIONAL
   }) async {
-    _errorMessage = 'Registro con email/password no disponible. Usa Google Sign-In.';
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-    return false;
+
+    try {
+      final response = await _authService.register(
+        name: name,
+        email: email,
+        password: password,
+        deviceId: deviceId,
+      );
+
+      if (response.success) {
+        print('[OK] Registro exitoso: ${response.user?.email}');
+        print('[TOKEN] Token recibido: ${response.token?.substring(0, 10) ?? "SIN TOKEN"}...');
+
+        // Configurar token en ApiService
+        if (response.token != null) {
+          ApiService.setAuthToken(response.token);
+          print('[OK] Token configurado en ApiService después de registro');
+        } else {
+          print('[ERROR] ERROR: Registro exitoso pero SIN token');
+        }
+
+        _user = response.user;
+        _status = AuthStatus.authenticated;
+        return true;
+      }
+
+      _errorMessage = response.message;
+      return false;
+    } catch (e) {
+      _errorMessage = 'Error al crear la cuenta: ${e.toString()}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  /// Login (DESHABILITADO)
+  /// Login con email y contraseña
   Future<bool> login({
     required String email,
     required String password,
-    required String deviceId,
-    bool rememberMe = false,
+    String? deviceId, // OPCIONAL
   }) async {
-    _errorMessage = 'Login con email/password no disponible. Usa Google Sign-In.';
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-    return false;
+
+    try {
+      final response = await _authService.login(
+        email: email,
+        password: password,
+        deviceId: deviceId,
+      );
+
+      if (response.success) {
+        print('[OK] Login con Email exitoso: ${response.user?.email}');
+        print('[TOKEN] Token recibido: ${response.token?.substring(0, 10) ?? "SIN TOKEN"}...');
+
+        // Configurar token en ApiService
+        if (response.token != null) {
+          ApiService.setAuthToken(response.token);
+          print('[OK] Token configurado en ApiService después de Email login');
+        } else {
+          print('[ERROR] ERROR: Login Email exitoso pero SIN token');
+        }
+
+        _user = response.user;
+        _status = AuthStatus.authenticated;
+        return true;
+      }
+
+      if (response.requiresDeviceChange) {
+        _status = AuthStatus.deviceChangePending;
+        _errorMessage = response.message;
+        return false;
+      }
+
+      _errorMessage = response.message;
+      return false;
+    } catch (e) {
+      _errorMessage = 'Error al iniciar sesión: ${e.toString()}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
-  */
 
   /// Login con Google
   Future<bool> loginWithGoogle(String deviceId) async {
@@ -171,15 +226,15 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.loginWithGoogle(deviceId);
 
       if (response.success) {
-        print('✅ Login con Google exitoso: ${response.user?.email}');
-        print('🎫 Token recibido: ${response.token?.substring(0, 10) ?? "SIN TOKEN"}...');
+        print('[OK] Login con Google exitoso: ${response.user?.email}');
+        print('[TOKEN] Token recibido: ${response.token?.substring(0, 10) ?? "SIN TOKEN"}...');
 
         // Configurar token en ApiService
         if (response.token != null) {
           ApiService.setAuthToken(response.token);
-          print('✅ Token configurado en ApiService después de Google login');
+          print('[OK] Token configurado en ApiService después de Google login');
         } else {
-          print('❌ ERROR: Login Google exitoso pero SIN token');
+          print('[ERROR] ERROR: Login Google exitoso pero SIN token');
         }
 
         _user = response.user;
@@ -335,12 +390,28 @@ class AuthProvider extends ChangeNotifier {
 
       // Limpiar token de ApiService
       ApiService.setAuthToken(null);
-      print('✅ Sesión cerrada y token limpiado');
+      print('[OK] Sesión cerrada y token limpiado');
+
+      // Limpiar base de datos local
+      try {
+        await DatabaseService.instance.deleteAllOrders();
+        print('[OK] Base de datos local limpiada');
+      } catch (e) {
+        print('[WARN] Error al limpiar base de datos local: $e');
+      }
     } catch (e) {
-      print('⚠️ Error al cerrar sesión en backend: $e');
+      print('[WARN] Error al cerrar sesión en backend: $e');
       // Limpiar token de ApiService aunque falle el backend
       ApiService.setAuthToken(null);
-      print('✅ Token limpiado localmente');
+      print('[OK] Token limpiado localmente');
+
+      // Limpiar base de datos local incluso si falla el logout
+      try {
+        await DatabaseService.instance.deleteAllOrders();
+        print('[OK] Base de datos local limpiada');
+      } catch (e) {
+        print('[WARN] Error al limpiar base de datos local: $e');
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

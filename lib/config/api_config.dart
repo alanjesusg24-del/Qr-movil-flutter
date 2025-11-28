@@ -10,7 +10,9 @@ class ApiConfig {
   static String getOrderDetail(int orderId) => '/mobile/orders/$orderId';
   static const String updateFcmToken = '/mobile/update-token';
 
-  // Endpoints - Auth (solo Google Sign-In)
+  // Endpoints - Auth
+  static const String authRegister = '/auth/register';
+  static const String authLogin = '/auth/login';
   static const String authLoginGoogle = '/auth/login/google';
   static const String authLogout = '/auth/logout';
   static const String authMe = '/auth/me';
@@ -19,6 +21,12 @@ class ApiConfig {
   static const String deviceChangeRequest = '/auth/device/change-request';
   static const String deviceVerifyChange = '/auth/device/verify-change';
   static const String deviceCancelRequest = '/auth/device/cancel-request';
+
+  // Endpoints - Businesses
+  static const String getAllBusinesses = '/businesses';
+  static const String getNearbyBusinesses = '/businesses/nearby';
+  static const String searchBusinesses = '/businesses/search';
+  static String getBusinessDetail(int businessId) => '/businesses/$businessId';
 
   // Headers
   static const Map<String, String> headers = {

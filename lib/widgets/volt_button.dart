@@ -41,9 +41,7 @@ class VoltButton extends StatelessWidget {
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
-            side: isOutlined
-                ? BorderSide(color: bgColor, width: 1.5)
-                : BorderSide.none,
+            side: isOutlined ? BorderSide(color: bgColor, width: 1.5) : BorderSide.none,
           ),
           elevation: isOutlined ? 0 : 2,
         ),

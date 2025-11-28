@@ -39,19 +39,19 @@ class DeviceProvider extends ChangeNotifier {
           osVersion: deviceInfo['osVersion'],
           appVersion: _appVersion,
         );
-        print('✅ Dispositivo registrado en el servidor: $_deviceId');
+        print('[OK] Dispositivo registrado en el servidor: $_deviceId');
       } catch (e) {
-        print('⚠️ No se pudo conectar al servidor: $e');
-        print('📱 Continuando en modo offline con device ID: $_deviceId');
+        print('[WARN] No se pudo conectar al servidor: $e');
+        print('Continuando en modo offline con device ID: $_deviceId');
         // Continuar en modo offline sin lanzar excepción
       }
 
       _isInitialized = true;
       notifyListeners();
 
-      print('✅ Dispositivo inicializado: $_deviceId');
+      print('[OK] Dispositivo inicializado: $_deviceId');
     } catch (e) {
-      print('❌ Error crítico al inicializar dispositivo: $e');
+      print('[ERROR] Error crítico al inicializar dispositivo: $e');
       _isInitialized = false;
       notifyListeners();
       rethrow;
@@ -66,9 +66,9 @@ class DeviceProvider extends ChangeNotifier {
       // Generar nuevo UUID
       _deviceId = const Uuid().v4();
       await prefs.setString(_deviceIdKey, _deviceId!);
-      print('📱 Nuevo device ID generado: $_deviceId');
+      print('Nuevo device ID generado: $_deviceId');
     } else {
-      print('📱 Device ID existente: $_deviceId');
+      print('Device ID existente: $_deviceId');
     }
   }
 

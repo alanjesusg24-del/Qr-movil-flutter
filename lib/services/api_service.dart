@@ -1,7 +1,9 @@
+import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import '../models/order.dart';
 import '../models/mobile_user.dart';
+import '../models/business.dart';
 
 class ApiService {
   static final Dio _dio = Dio(
@@ -26,11 +28,11 @@ class ApiService {
     _authToken = token;
     if (token != null) {
       _dio.options.headers['Authorization'] = 'Bearer $token';
-      print('🔐 Token configurado en ApiService: ${token.substring(0, 10)}...');
-      print('📋 Headers actuales: ${_dio.options.headers}');
+      print('Token configurado en ApiService: ${token.substring(0, 10)}...');
+      print('Headers actuales: ${_dio.options.headers}');
     } else {
       _dio.options.headers.remove('Authorization');
-      print('🔓 Token removido de ApiService');
+      print('Token removido de ApiService');
     }
   }
 
@@ -117,26 +119,26 @@ class ApiService {
       }
 
       // Debug: Mostrar si está autenticado
-      print('📡 ========== OBTENIENDO ÓRDENES ==========');
-      print('🔍 Autenticado: $isAuthenticated');
-      print('🔍 Token presente: ${_authToken != null}');
+      print('========== OBTENIENDO ÓRDENES ==========');
+      print('Autenticado: $isAuthenticated');
+      print('Token presente: ${_authToken != null}');
       if (_authToken != null) {
-        print('🎫 Token actual: ${_authToken!.substring(0, 20)}...');
+        print('Token actual: ${_authToken!.substring(0, 20)}...');
       }
-      print('🔍 Device ID: $_deviceId');
-      print('📋 Headers que se enviarán: ${_dio.options.headers}');
+      print('Device ID: $_deviceId');
+      print('Headers que se enviarán: ${_dio.options.headers}');
 
       final response = await _dio.get(
         ApiConfig.getOrders,
         queryParameters: queryParams,
       );
 
-      print('📦 Respuesta del servidor recibida');
-      print('✅ Status code: ${response.statusCode}');
+      print('Respuesta del servidor recibida');
+      print('Status code: ${response.statusCode}');
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final List<dynamic> ordersJson = response.data['data']['orders'];
-        print('✅ ${ordersJson.length} órdenes obtenidas del servidor');
+        print('${ordersJson.length} órdenes obtenidas del servidor');
         return ordersJson.map((json) => Order.fromJson(json)).toList();
       } else {
         throw Exception(response.data['message'] ?? 'Error al obtener órdenes');
@@ -170,19 +172,92 @@ class ApiService {
     }
   }
 
-  // Actualizar FCM Token
-  static Future<void> updateFcmToken(String fcmToken) async {
+  /// Obtener todos los negocios disponibles
+  ///
+  /// Retorna una lista de todos los negocios registrados en el sistema.
+  /// Soporta paginación a través de parámetros opcionales.
+  static Future<List<Business>> getAllBusinesses({
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
-      final response = await _dio.put(
-        ApiConfig.updateFcmToken,
-        data: {'fcm_token': fcmToken},
+      final response = await _dio.get(
+        ApiConfig.getAllBusinesses,
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
+        options: Options(
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          },
+        ),
       );
 
-      if (response.statusCode != 200 || response.data['success'] != true) {
-        throw Exception(response.data['message'] ?? 'Error al actualizar token');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final List<dynamic> businessesJson = response.data['data']['businesses'] ?? response.data['data'];
+        return businessesJson.map((json) => Business.fromJson(json)).toList();
+      } else {
+        throw Exception(response.data['message'] ?? 'Error al obtener negocios');
       }
     } on DioException catch (e) {
       throw _handleError(e);
+    }
+  }
+
+  /// Obtener negocios cercanos a una ubicación
+  ///
+  /// [latitude] Latitud de la ubicación actual
+  /// [longitude] Longitud de la ubicación actual
+  /// [radius] Radio de búsqueda en kilómetros (default: 10km)
+  ///
+  /// Retorna una lista de negocios cercanos ordenados por distancia.
+  static Future<List<Business>> getNearbyBusinesses({
+    required double latitude,
+    required double longitude,
+    double radius = 10.0,
+  }) async {
+    try {
+      final response = await _dio.get(
+        ApiConfig.getNearbyBusinesses,
+        queryParameters: {
+          'latitude': latitude,
+          'longitude': longitude,
+          'radius': radius,
+        },
+        options: Options(
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final List<dynamic> businessesJson = response.data['data']['businesses'] ?? response.data['data'];
+        return businessesJson.map((json) => Business.fromJson(json)).toList();
+      } else {
+        throw Exception(response.data['message'] ?? 'Error al obtener negocios cercanos');
+      }
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Actualizar FCM token en el servidor
+  static Future<void> updateFcmToken(String fcmToken) async {
+    try {
+      print('[API] Actualizando FCM token en backend...');
+      await _dio.put(
+        ApiConfig.updateFcmToken,
+        data: {
+          'fcm_token': fcmToken,
+          'platform': Platform.isIOS ? 'ios' : 'android',
+        },
+      );
+      print('[API] FCM token actualizado exitosamente');
+    } on DioException catch (e) {
+      print('[API] Error al actualizar FCM token: ${e.response?.data ?? e.message}');
+      // No lanzar excepción para no interrumpir el flujo de la app
     }
   }
 

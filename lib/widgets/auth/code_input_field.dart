@@ -52,12 +52,6 @@ class _CodeInputFieldState extends State<CodeInputField> {
     }
   }
 
-  void _onBackspace(int index) {
-    if (_controllers[index].text.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
-    }
-  }
-
   void _checkCompleted() {
     String code = _controllers.map((c) => c.text).join();
     if (code.length == widget.length) {

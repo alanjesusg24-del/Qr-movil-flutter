@@ -54,8 +54,7 @@ class BiometricService {
         print('Biometría no disponible');
       } else if (e.code == auth_error.notEnrolled) {
         print('No hay biometría registrada');
-      } else if (e.code == auth_error.lockedOut ||
-                 e.code == auth_error.permanentlyLockedOut) {
+      } else if (e.code == auth_error.lockedOut || e.code == auth_error.permanentlyLockedOut) {
         print('Biometría bloqueada');
       } else {
         print('Error de autenticación biométrica: ${e.message}');

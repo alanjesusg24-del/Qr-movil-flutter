@@ -1,39 +1,37 @@
 class AuthUser {
   final int userId;
-  final String name;
+  final String? name; // OPCIONAL - puede ser null
   final String email;
   final String? profilePhotoUrl;
   final String? googleId;
   final bool emailVerified;
   final String? currentDeviceId;
   final DateTime? deviceLinkedAt;
-  final DateTime createdAt;
+  final DateTime? createdAt; // OPCIONAL - puede ser null en algunos casos
 
   AuthUser({
     required this.userId,
-    required this.name,
+    this.name, // OPCIONAL
     required this.email,
     this.profilePhotoUrl,
     this.googleId,
     required this.emailVerified,
     this.currentDeviceId,
     this.deviceLinkedAt,
-    required this.createdAt,
+    this.createdAt,
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
       userId: json['user_id'] ?? json['id'],
-      name: json['name'],
-      email: json['email'],
+      name: json['name'], // Puede ser null
+      email: json['email'] ?? '',
       profilePhotoUrl: json['profile_photo_url'],
       googleId: json['google_id'],
       emailVerified: json['email_verified'] ?? (json['email_verified_at'] != null),
-      currentDeviceId: json['current_device_id'],
-      deviceLinkedAt: json['device_linked_at'] != null
-          ? DateTime.parse(json['device_linked_at'])
-          : null,
-      createdAt: DateTime.parse(json['created_at']),
+      currentDeviceId: json['current_device_id'] ?? json['device_id'],
+      deviceLinkedAt: json['device_linked_at'] != null ? DateTime.parse(json['device_linked_at']) : null,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
     );
   }
 
@@ -47,12 +45,15 @@ class AuthUser {
       'email_verified': emailVerified,
       'current_device_id': currentDeviceId,
       'device_linked_at': deviceLinkedAt?.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt?.toIso8601String(),
     };
   }
 
   bool get isDeviceLinked => currentDeviceId != null;
   bool get isGoogleUser => googleId != null;
+
+  /// Obtener nombre para mostrar (email si no hay nombre)
+  String get displayName => name ?? email.split('@')[0];
 
   AuthUser copyWith({
     int? userId,

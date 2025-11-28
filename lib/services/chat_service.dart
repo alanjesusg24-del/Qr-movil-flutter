@@ -6,31 +6,29 @@ class ChatService {
   /// Obtener mensajes de una orden
   Future<List<ChatMessage>> getMessages(int orderId) async {
     try {
-      print('📨 Obteniendo mensajes de orden $orderId...');
+      print('Obteniendo mensajes de orden $orderId...');
 
       final response = await ApiService.dio.get(
         '/mobile/orders/$orderId/messages',
       );
 
-      print('✅ Respuesta recibida: ${response.data}');
+      print('Respuesta recibida: ${response.data}');
 
       if (response.data['success'] == true) {
         final messagesJson = response.data['data']['messages'] as List;
-        final messages = messagesJson
-            .map((json) => ChatMessage.fromJson(json))
-            .toList();
+        final messages = messagesJson.map((json) => ChatMessage.fromJson(json)).toList();
 
-        print('✅ ${messages.length} mensajes cargados');
+        print('${messages.length} mensajes cargados');
         return messages;
       } else {
-        print('❌ Error: ${response.data['message']}');
+        print('Error: ${response.data['message']}');
         throw Exception(response.data['message'] ?? 'Error al obtener mensajes');
       }
     } on DioException catch (e) {
-      print('❌ DioException: ${e.response?.data ?? e.message}');
+      print('DioException: ${e.response?.data ?? e.message}');
       throw Exception(_parseDioError(e));
     } catch (e) {
-      print('❌ Error inesperado: $e');
+      print('Error inesperado: $e');
       rethrow;
     }
   }
@@ -38,8 +36,8 @@ class ChatService {
   /// Enviar un mensaje
   Future<ChatMessage> sendMessage(int orderId, String message) async {
     try {
-      print('📤 Enviando mensaje a orden $orderId...');
-      print('📝 Mensaje: $message');
+      print('Enviando mensaje a orden $orderId...');
+      print('Mensaje: $message');
 
       final response = await ApiService.dio.post(
         '/mobile/orders/$orderId/messages',
@@ -48,24 +46,24 @@ class ChatService {
         },
       );
 
-      print('✅ Respuesta: ${response.data}');
+      print('Respuesta: ${response.data}');
 
       if (response.data['success'] == true) {
         final messageData = response.data['data'];
         final sentMessage = ChatMessage.fromJson(messageData);
 
-        print('✅ Mensaje enviado exitosamente');
+        print('Mensaje enviado exitosamente');
         return sentMessage;
       } else {
-        print('❌ Error: ${response.data['message']}');
+        print('Error: ${response.data['message']}');
         throw Exception(response.data['message'] ?? 'Error al enviar mensaje');
       }
     } on DioException catch (e) {
-      print('❌ DioException al enviar: ${e.response?.data ?? e.message}');
-      print('❌ Status code: ${e.response?.statusCode}');
+      print('DioException al enviar: ${e.response?.data ?? e.message}');
+      print('Status code: ${e.response?.statusCode}');
       throw Exception(_parseDioError(e));
     } catch (e) {
-      print('❌ Error inesperado al enviar: $e');
+      print('Error inesperado al enviar: $e');
       rethrow;
     }
   }
@@ -73,7 +71,7 @@ class ChatService {
   /// Marcar mensajes como leídos
   Future<void> markAsRead(int orderId) async {
     try {
-      print('👁️ Marcando mensajes como leídos para orden $orderId...');
+      print('Marcando mensajes como leídos para orden $orderId...');
 
       final response = await ApiService.dio.put(
         '/mobile/orders/$orderId/messages/mark-read',
@@ -81,10 +79,10 @@ class ChatService {
 
       if (response.data['success'] == true) {
         final markedCount = response.data['data']['messages_marked'];
-        print('✅ $markedCount mensajes marcados como leídos');
+        print('$markedCount mensajes marcados como leídos');
       }
     } on DioException catch (e) {
-      print('⚠️ Error marcando como leídos: ${e.message}');
+      print('Error marcando como leídos: ${e.message}');
       // No lanzar excepción, solo loguear
     }
   }

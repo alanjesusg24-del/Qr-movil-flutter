@@ -8,16 +8,24 @@ import 'config/theme.dart';
 import 'providers/device_provider.dart';
 import 'providers/orders_provider.dart';
 import 'providers/auth_provider.dart';
-import 'screens/splash_screen.dart';
+import 'screens/auth_check_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/scan_qr_screen.dart';
 import 'screens/order_detail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/auth/verify_email_screen.dart';
+import 'screens/auth/login_screen_cetam.dart';
+import 'screens/auth/register_screen_cetam.dart';
 import 'screens/auth/device_change_screen.dart';
+import 'screens/all_businesses_screen.dart';
+import 'screens/map_screen.dart';
+import 'screens/nearby_businesses_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/premium_screen.dart';
 import 'models/order.dart';
+import 'providers/subscription_provider.dart';
 
 // GlobalKey para navegación desde notificaciones
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -26,7 +34,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('📨 Mensaje recibido en background: ${message.notification?.title}');
+  print('[MSG] Mensaje recibido en background: ${message.notification?.title}');
   print('   Data: ${message.data}');
 }
 
@@ -40,7 +48,7 @@ void main() async {
     );
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   } catch (e) {
-    print('⚠️ Firebase no configurado: $e');
+    print('[WARN] Firebase no configurado: $e');
   }
 
   runApp(const MyApp());
@@ -56,22 +64,29 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => OrdersProvider()),
+        ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ],
       child: MaterialApp(
-        title: 'Order QR System',
+        title: 'Focus',
         debugShowCheckedModeBanner: false,
-        theme: voltTheme(),
+        theme: cetamTheme(),
         navigatorKey: navigatorKey, // Para navegación desde notificaciones
-        initialRoute: '/',
+        home: const AuthCheckScreen(),
         routes: {
-          '/': (context) => const SplashScreen(),
-          '/login': (context) => const LoginScreen(),
-          '/verify-email': (context) => const VerifyEmailScreen(),
+          '/login': (context) => const LoginScreenCetam(),
+          '/register': (context) => const RegisterScreenCetam(),
+          '/login-google': (context) => const LoginScreen(),
           '/device-change': (context) => const DeviceChangeScreen(),
           '/home': (context) => const HomeScreen(),
           '/scan-qr': (context) => const ScanQrScreen(),
           '/order-detail': (context) => const OrderDetailScreen(),
           '/settings': (context) => const SettingsScreen(),
+          '/all-businesses': (context) => const AllBusinessesScreen(),
+          '/map': (context) => const MapScreen(),
+          '/nearby-businesses': (context) => const NearbyBusinessesScreen(),
+          '/notifications': (context) => const NotificationsScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/premium': (context) => const PremiumScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/chat') {

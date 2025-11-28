@@ -124,7 +124,7 @@ class AppSpacing {
   // Shadows (similar a Volt)
   static List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withValues(alpha: 0.05),
       blurRadius: 10,
       offset: const Offset(0, 2),
     ),
@@ -132,7 +132,7 @@ class AppSpacing {
 
   static List<BoxShadow> elevatedShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.1),
+      color: Colors.black.withValues(alpha: 0.1),
       blurRadius: 20,
       offset: const Offset(0, 4),
     ),
@@ -160,7 +160,23 @@ class AppIcons {
   static const IconData back = Icons.arrow_back;
 }
 
-ThemeData voltTheme() {
+/// Creates the CETAM institutional theme for the application.
+///
+/// Returns a [ThemeData] configured with CETAM's mandatory color palette,
+/// Material Design 3 components, and standardized spacing/sizing values.
+///
+/// This theme MUST be used for all internal CETAM projects.
+/// External client projects may use custom themes but must follow
+/// the same structural patterns.
+///
+/// Example:
+/// ```dart
+/// MaterialApp(
+///   theme: cetamTheme(),
+///   // ...
+/// );
+/// ```
+ThemeData cetamTheme() {
   return ThemeData(
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
@@ -218,3 +234,10 @@ ThemeData voltTheme() {
     ),
   );
 }
+
+/// Legacy alias for [cetamTheme].
+///
+/// @deprecated Use [cetamTheme] instead for CETAM standard compliance.
+/// This alias is maintained for backwards compatibility only.
+@Deprecated('Use cetamTheme() instead')
+ThemeData voltTheme() => cetamTheme();

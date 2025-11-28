@@ -101,3 +101,4 @@ coverage/
 # Archivos de configuración y claves sensibles de Firebase/Google Cloud
 focus-qr-firebase-adminsdk-fbsvc-*.json
 google-services.json
+CONFIGURACION_API_KEYS.md
